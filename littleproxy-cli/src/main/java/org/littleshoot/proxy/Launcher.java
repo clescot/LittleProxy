@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 /** Launches a new HTTP proxy. */
 public class Launcher {
 
-  public static final int DEFAULT_PORT = 8080;
   private static final Logger LOG = LoggerFactory.getLogger(Launcher.class);
 
   private static final String OPTION_DNSSEC = "dnssec";
@@ -50,18 +49,13 @@ public class Launcher {
   private static final String OPTION_SSL_CLIENTS_KEYSTORE_ALIAS = SSL_CLIENTS_KEYSTORE_ALIAS;
   private static final String OPTION_SSL_CLIENTS_KEYSTORE_PASSWORD = SSL_CLIENTS_KEYSTORE_PASSWORD;
   private static final String OPTION_TRANSPARENT = TRANSPARENT;
-  private static final String OPTION_THROTTLE_READ_BYTES_PER_SECOND =
-      THROTTLE_READ_BYTES_PER_SECOND;
-  private static final String OPTION_THROTTLE_WRITE_BYTES_PER_SECOND =
-      THROTTLE_WRITE_BYTES_PER_SECOND;
-  private static final String OPTION_ALLOW_REQUEST_TO_ORIGIN_SERVER =
-      ALLOW_REQUESTS_TO_ORIGIN_SERVER;
+  private static final String OPTION_THROTTLE_READ_BYTES_PER_SECOND = THROTTLE_READ_BYTES_PER_SECOND;
+  private static final String OPTION_THROTTLE_WRITE_BYTES_PER_SECOND = THROTTLE_WRITE_BYTES_PER_SECOND;
+  private static final String OPTION_ALLOW_REQUEST_TO_ORIGIN_SERVER = ALLOW_REQUESTS_TO_ORIGIN_SERVER;
   private static final String OPTION_ALLOW_PROXY_PROTOCOL = ALLOW_PROXY_PROTOCOL;
   private static final String OPTION_SEND_PROXY_PROTOCOL = SEND_PROXY_PROTOCOL;
-  private static final String OPTION_CLIENT_TO_PROXY_WORKER_THREADS =
-      CLIENT_TO_PROXY_WORKER_THREADS;
-  private static final String OPTION_PROXY_TO_SERVER_WORKER_THREADS =
-      PROXY_TO_SERVER_WORKER_THREADS;
+  private static final String OPTION_CLIENT_TO_PROXY_WORKER_THREADS = CLIENT_TO_PROXY_WORKER_THREADS;
+  private static final String OPTION_PROXY_TO_SERVER_WORKER_THREADS = PROXY_TO_SERVER_WORKER_THREADS;
   private static final String OPTION_ACCEPTOR_THREADS = ACCEPTOR_THREADS;
   private static final String OPTION_ACTIVITY_LOG_FORMAT = "activity_log_format";
   public static final int DELAY_IN_SECONDS_BETWEEN_RELOAD = 15;
@@ -179,26 +173,22 @@ public class Launcher {
       final String val = cmd.getOptionValue(OPTION_AUTHENTICATE_SSL_CLIENTS);
       LOG.info("Setting authenticate SSL clients with a selfSigned cert : '{}'", val);
       if (val != null) {
-        boolean trustAllServers =
-            Boolean.parseBoolean(cmd.getOptionValue(OPTION_SSL_CLIENTS_TRUST_ALL_SERVERS, "false"));
-        boolean sendCerts =
-            Boolean.parseBoolean(cmd.getOptionValue(OPTION_SSL_CLIENTS_SEND_CERTS, "false"));
+        boolean trustAllServers = Boolean
+            .parseBoolean(cmd.getOptionValue(OPTION_SSL_CLIENTS_TRUST_ALL_SERVERS, "false"));
+        boolean sendCerts = Boolean.parseBoolean(cmd.getOptionValue(OPTION_SSL_CLIENTS_SEND_CERTS, "false"));
         SelfSignedSslEngineSource sslEngineSource;
         if (cmd.hasOption(OPTION_SSL_CLIENTS_KEYSTORE_PATH)) {
           String keyStorePath = cmd.getOptionValue(OPTION_SSL_CLIENTS_KEYSTORE_PATH);
           if (cmd.hasOption(OPTION_SSL_CLIENTS_KEYSTORE_PASSWORD)) {
             String keyStoreAlias = cmd.getOptionValue(OPTION_SSL_CLIENTS_KEYSTORE_ALIAS, "");
             String keyStorePassword = cmd.getOptionValue(OPTION_SSL_CLIENTS_KEYSTORE_PASSWORD);
-            sslEngineSource =
-                new SelfSignedSslEngineSource(
-                    keyStorePath, trustAllServers, sendCerts, keyStoreAlias, keyStorePassword);
+            sslEngineSource = new SelfSignedSslEngineSource(
+                keyStorePath, trustAllServers, sendCerts, keyStoreAlias, keyStorePassword);
           } else {
-            sslEngineSource =
-                new SelfSignedSslEngineSource(keyStorePath, trustAllServers, sendCerts);
+            sslEngineSource = new SelfSignedSslEngineSource(keyStorePath, trustAllServers, sendCerts);
           }
         } else {
-          sslEngineSource =
-              new SelfSignedSslEngineSource(DEFAULT_JKS_KEYSTORE_PATH, trustAllServers, sendCerts);
+          sslEngineSource = new SelfSignedSslEngineSource(DEFAULT_JKS_KEYSTORE_PATH, trustAllServers, sendCerts);
         }
         bootstrap.withSslEngineSource(sslEngineSource);
         bootstrap.withAuthenticateSslClients(Boolean.parseBoolean(val));
@@ -215,12 +205,10 @@ public class Launcher {
     long throttlingReadBytesPerSecond = 0;
     long throttlingWriteBytesPerSecond = 0;
     if (cmd.hasOption(OPTION_THROTTLE_READ_BYTES_PER_SECOND)) {
-      throttlingReadBytesPerSecond =
-          Long.parseLong(cmd.getOptionValue(OPTION_THROTTLE_READ_BYTES_PER_SECOND));
+      throttlingReadBytesPerSecond = Long.parseLong(cmd.getOptionValue(OPTION_THROTTLE_READ_BYTES_PER_SECOND));
     }
     if (cmd.hasOption(OPTION_THROTTLE_WRITE_BYTES_PER_SECOND)) {
-      throttlingWriteBytesPerSecond =
-          Long.parseLong(cmd.getOptionValue(OPTION_THROTTLE_WRITE_BYTES_PER_SECOND));
+      throttlingWriteBytesPerSecond = Long.parseLong(cmd.getOptionValue(OPTION_THROTTLE_WRITE_BYTES_PER_SECOND));
     }
     if (throttlingReadBytesPerSecond > 0 || throttlingWriteBytesPerSecond > 0) {
       LOG.info(
@@ -255,8 +243,7 @@ public class Launcher {
     }
 
     ThreadPoolConfiguration threadPoolConfiguration = new ThreadPoolConfiguration();
-    boolean threadPoolConfigSet =
-        false; // Flag to track if thread pool configuration is set through command line
+    boolean threadPoolConfigSet = false; // Flag to track if thread pool configuration is set through command line
     // options
     if (cmd.hasOption(OPTION_CLIENT_TO_PROXY_WORKER_THREADS)) {
       String optionValue = cmd.getOptionValue(OPTION_CLIENT_TO_PROXY_WORKER_THREADS);

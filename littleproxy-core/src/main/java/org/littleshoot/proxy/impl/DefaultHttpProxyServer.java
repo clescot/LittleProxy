@@ -36,22 +36,26 @@ import org.slf4j.LoggerFactory;
 /**
  * Primary implementation of an {@link HttpProxyServer}.
  *
- * <p>{@link DefaultHttpProxyServer} is bootstrapped by calling {@link #bootstrap()} or {@link
- * #bootstrapFromFile(String)}, and then calling {@link DefaultHttpProxyServerBootstrap#start()}.
+ * <p>
+ * {@link DefaultHttpProxyServer} is bootstrapped by calling
+ * {@link #bootstrap()} or {@link
+ * #bootstrapFromFile(String)}, and then calling
+ * {@link DefaultHttpProxyServerBootstrap#start()}.
  * For example:
  *
  * <pre>
  * DefaultHttpProxyServer server = DefaultHttpProxyServer
- *         .bootstrap()
- *         .withPort(8090)
- *         .start();
+ *     .bootstrap()
+ *     .withPort(8090)
+ *     .start();
  * </pre>
  */
 public class DefaultHttpProxyServer implements HttpProxyServer {
   private static final Logger LOG = LoggerFactory.getLogger(DefaultHttpProxyServer.class);
 
   /**
-   * The interval in ms at which the GlobalTrafficShapingHandler will run to compute and throttle
+   * The interval in ms at which the GlobalTrafficShapingHandler will run to
+   * compute and throttle
    * the proxy-to-server bandwidth.
    */
   private static final long TRAFFIC_SHAPING_CHECK_INTERVAL_MS = 250L;
@@ -61,7 +65,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   private static final int MAX_CHUNK_SIZE_DEFAULT = 8192 * 2;
 
   /**
-   * The proxy alias to use in the Via header if no explicit proxy alias is specified and the
+   * The proxy alias to use in the Via header if no explicit proxy alias is
+   * specified and the
    * hostname of the local machine cannot be resolved.
    */
   private static final String FALLBACK_PROXY_ALIAS = "littleproxy";
@@ -95,11 +100,12 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   private static final String DEFAULT_JKS_KEYSTORE_PATH = "littleproxy_keystore.jks";
 
   /**
-   * Our {@link ServerGroup}. Multiple proxy servers can share the same ServerGroup in order to
+   * Our {@link ServerGroup}. Multiple proxy servers can share the same
+   * ServerGroup in order to
    * reuse threads and other such resources.
    */
-  private final ServerGroup serverGroup;
 
+  private final ServerGroup serverGroup;
   private final TransportProtocol transportProtocol;
   /*
    * The address that the server will attempt to bind to.
@@ -134,7 +140,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   private final String proxyAlias;
 
   /**
-   * True when the proxy has already been stopped by calling {@link #stop()} or {@link #abort()}.
+   * True when the proxy has already been stopped by calling {@link #stop()} or
+   * {@link #abort()}.
    */
   private final AtomicBoolean stopped = new AtomicBoolean(false);
 
@@ -142,14 +149,16 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   private final Collection<ActivityTracker> activityTrackers = new ConcurrentLinkedQueue<>();
 
   /**
-   * Keep track of all channels created by this proxy server for later shutdown when the proxy is
+   * Keep track of all channels created by this proxy server for later shutdown
+   * when the proxy is
    * stopped.
    */
-  private final ChannelGroup allChannels =
-      new DefaultChannelGroup("HTTP-Proxy-Server", GlobalEventExecutor.INSTANCE, true);
+  private final ChannelGroup allChannels = new DefaultChannelGroup("HTTP-Proxy-Server", GlobalEventExecutor.INSTANCE,
+      true);
 
   /**
-   * JVM shutdown hook to shut down this proxy server. Declared as a class-level variable to allow
+   * JVM shutdown hook to shut down this proxy server. Declared as a class-level
+   * variable to allow
    * removing the shutdown hook when the proxy server is stopped normally.
    */
   private final Thread jvmShutdownHook = new Thread(this::abort, "LittleProxy-JVM-shutdown-hook");
@@ -159,7 +168,10 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
     return new DefaultHttpProxyServerBootstrap();
   }
 
-  /** Bootstrap a new {@link DefaultHttpProxyServer} using defaults from the given file. */
+  /**
+   * Bootstrap a new {@link DefaultHttpProxyServer} using defaults from the given
+   * file.
+   */
   public static HttpProxyServerBootstrap bootstrapFromFile(String path) {
     final File propsFile = new File(path);
     Properties props = new Properties();
@@ -183,31 +195,52 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   /**
    * Creates a new proxy server.
    *
-   * @param serverGroup our ServerGroup for shared thread pools and such
-   * @param transportProtocol The protocol to use for data transport
-   * @param requestedAddress The address on which this server will listen
-   * @param sslEngineSource (optional) if specified, this Proxy will encrypt inbound connections
-   *     from clients using an {@link SSLEngine} obtained from this {@link SslEngineSource}.
-   * @param authenticateSslClients Indicate whether to authenticate clients when using SSL
-   * @param proxyAuthenticator (optional) If specified, requests to the proxy will be authenticated
-   *     using HTTP BASIC authentication per the provided {@link ProxyAuthenticator}
-   * @param chainProxyManager The proxy to send requests to if chaining proxies. Typically <code>
-   *     null</code>.
-   * @param mitmManager The {@link MitmManager} to use for man in the middling CONNECT requests
-   * @param filtersSource Source for {@link HttpFilters}
-   * @param transparent If true, this proxy will run as a transparent proxy. This will not modify
-   *     the response, and will only modify the request to amend the URI if the target is the origin
-   *     server (to comply with RFC 7230 section 5.3.1).
-   * @param idleConnectionTimeout The timeout (in seconds) for auto-closing idle connections.
-   * @param activityTrackers for tracking activity on this proxy
-   * @param connectTimeout number of milliseconds to wait to connect to the upstream server
-   * @param serverResolver the {@link HostResolver} to use for resolving server addresses
-   * @param readThrottleBytesPerSecond read throttle bandwidth
+   * @param serverGroup                 our ServerGroup for shared thread pools
+   *                                    and such
+   * @param transportProtocol           The protocol to use for data transport
+   * @param requestedAddress            The address on which this server will
+   *                                    listen
+   * @param sslEngineSource             (optional) if specified, this Proxy will
+   *                                    encrypt inbound connections
+   *                                    from clients using an {@link SSLEngine}
+   *                                    obtained from this
+   *                                    {@link SslEngineSource}.
+   * @param authenticateSslClients      Indicate whether to authenticate clients
+   *                                    when using SSL
+   * @param proxyAuthenticator          (optional) If specified, requests to the
+   *                                    proxy will be authenticated
+   *                                    using HTTP BASIC authentication per the
+   *                                    provided {@link ProxyAuthenticator}
+   * @param chainProxyManager           The proxy to send requests to if chaining
+   *                                    proxies. Typically <code>
+   *     null</code>                 .
+   * @param mitmManager                 The {@link MitmManager} to use for man in
+   *                                    the middling CONNECT requests
+   * @param filtersSource               Source for {@link HttpFilters}
+   * @param transparent                 If true, this proxy will run as a
+   *                                    transparent proxy. This will not modify
+   *                                    the response, and will only modify the
+   *                                    request to amend the URI if the target is
+   *                                    the origin
+   *                                    server (to comply with RFC 7230 section
+   *                                    5.3.1).
+   * @param idleConnectionTimeout       The timeout (in seconds) for auto-closing
+   *                                    idle connections.
+   * @param activityTrackers            for tracking activity on this proxy
+   * @param connectTimeout              number of milliseconds to wait to connect
+   *                                    to the upstream server
+   * @param serverResolver              the {@link HostResolver} to use for
+   *                                    resolving server addresses
+   * @param readThrottleBytesPerSecond  read throttle bandwidth
    * @param writeThrottleBytesPerSecond write throttle bandwidth
-   * @param allowRequestsToOriginServer when true, allow the proxy to handle requests that contain
-   *     an origin-form URI, as defined in RFC 7230 5.3.1
-   * @param acceptProxyProtocol when true, the proxy will accept a proxy protocol header from client
-   * @param sendProxyProtocol when true, the proxy will send a proxy protocol header to the server
+   * @param allowRequestsToOriginServer when true, allow the proxy to handle
+   *                                    requests that contain
+   *                                    an origin-form URI, as defined in RFC 7230
+   *                                    5.3.1
+   * @param acceptProxyProtocol         when true, the proxy will accept a proxy
+   *                                    protocol header from client
+   * @param sendProxyProtocol           when true, the proxy will send a proxy
+   *                                    protocol header to the server
    */
   private DefaultHttpProxyServer(
       ServerGroup serverGroup,
@@ -252,9 +285,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
     this.serverResolver = serverResolver;
 
     if (writeThrottleBytesPerSecond > 0 || readThrottleBytesPerSecond > 0) {
-      globalTrafficShapingHandler =
-          createGlobalTrafficShapingHandler(
-              transportProtocol, readThrottleBytesPerSecond, writeThrottleBytesPerSecond);
+      globalTrafficShapingHandler = createGlobalTrafficShapingHandler(
+          transportProtocol, readThrottleBytesPerSecond, writeThrottleBytesPerSecond);
     } else {
       globalTrafficShapingHandler = null;
     }
@@ -280,7 +312,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   }
 
   /**
-   * Creates a new GlobalTrafficShapingHandler for this HttpProxyServer, using this proxy's
+   * Creates a new GlobalTrafficShapingHandler for this HttpProxyServer, using
+   * this proxy's
    * proxyToServerEventLoop.
    */
   private GlobalTrafficShapingHandler createGlobalTrafficShapingHandler(
@@ -347,9 +380,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
       // don't create a GlobalTrafficShapingHandler if throttling was not enabled and
       // is still not enabled
       if (readThrottleBytesPerSecond > 0 || writeThrottleBytesPerSecond > 0) {
-        globalTrafficShapingHandler =
-            createGlobalTrafficShapingHandler(
-                transportProtocol, readThrottleBytesPerSecond, writeThrottleBytesPerSecond);
+        globalTrafficShapingHandler = createGlobalTrafficShapingHandler(
+            transportProtocol, readThrottleBytesPerSecond, writeThrottleBytesPerSecond);
       }
     }
   }
@@ -434,10 +466,12 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   }
 
   /**
-   * Performs cleanup necessary to stop the server. Closes all channels opened by the server and
+   * Performs cleanup necessary to stop the server. Closes all channels opened by
+   * the server and
    * unregisters this server from the server group.
    *
-   * @param graceful when true, waits for requests to terminate before stopping the server
+   * @param graceful when true, waits for requests to terminate before stopping
+   *                 the server
    */
   protected void doStop(boolean graceful) {
     // only stop the server if it hasn't already been stopped
@@ -480,8 +514,9 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   /**
    * Closes all channels opened by this proxy server.
    *
-   * @param graceful when false, attempts to shut down all channels immediately and ignores any
-   *     channel-closing exceptions
+   * @param graceful when false, attempts to shut down all channels immediately
+   *                 and ignores any
+   *                 channel-closing exceptions
    */
   protected void closeAllChannels(boolean graceful) {
     LOG.info("Closing all channels {}", graceful ? "(graceful)" : "(non-graceful)");
@@ -528,23 +563,21 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   }
 
   private void doStart() {
-    ServerBootstrap serverBootstrap =
-        new ServerBootstrap()
-            .group(
-                serverGroup.getClientToProxyAcceptorPoolForTransport(transportProtocol),
-                serverGroup.getClientToProxyWorkerPoolForTransport(transportProtocol));
+    ServerBootstrap serverBootstrap = new ServerBootstrap()
+        .group(
+            serverGroup.getClientToProxyAcceptorPoolForTransport(transportProtocol),
+            serverGroup.getClientToProxyWorkerPoolForTransport(transportProtocol));
 
-    ChannelInitializer<Channel> initializer =
-        new ChannelInitializer<>() {
-          protected void initChannel(Channel ch) {
-            new ClientToProxyConnection(
-                DefaultHttpProxyServer.this,
-                sslEngineSource,
-                authenticateSslClients,
-                ch.pipeline(),
-                globalTrafficShapingHandler);
-          }
-        };
+    ChannelInitializer<Channel> initializer = new ChannelInitializer<>() {
+      protected void initChannel(Channel ch) {
+        new ClientToProxyConnection(
+            DefaultHttpProxyServer.this,
+            sslEngineSource,
+            authenticateSslClients,
+            ch.pipeline(),
+            globalTrafficShapingHandler);
+      }
+    };
     switch (transportProtocol) {
       case TCP:
         LOG.info("Proxy listening with TCP transport");
@@ -606,16 +639,22 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
   @NullMarked
   private static class DefaultHttpProxyServerBootstrap implements HttpProxyServerBootstrap {
     private String name = DEFAULT_LITTLE_PROXY_NAME;
-    @Nullable private ServerGroup serverGroup;
+    @Nullable
+    private ServerGroup serverGroup;
     private TransportProtocol transportProtocol = TransportProtocol.TCP;
-    @Nullable private InetSocketAddress requestedAddress;
+    @Nullable
+    private InetSocketAddress requestedAddress;
     private int port = DEFAULT_PORT;
     private boolean allowLocalOnly = true;
-    @Nullable private SslEngineSource sslEngineSource;
+    @Nullable
+    private SslEngineSource sslEngineSource;
     private boolean authenticateSslClients = true;
-    @Nullable private ProxyAuthenticator proxyAuthenticator;
-    @Nullable private ChainedProxyManager chainProxyManager;
-    @Nullable private MitmManager mitmManager;
+    @Nullable
+    private ProxyAuthenticator proxyAuthenticator;
+    @Nullable
+    private ChainedProxyManager chainProxyManager;
+    @Nullable
+    private MitmManager mitmManager;
     private HttpFiltersSource filtersSource = new HttpFiltersSourceAdapter();
     private boolean transparent;
     private Duration idleConnectionTimeout = Duration.ofSeconds(70);
@@ -624,8 +663,10 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
     private HostResolver serverResolver = new DefaultHostResolver();
     private long readThrottleBytesPerSecond;
     private long writeThrottleBytesPerSecond;
-    @Nullable private InetSocketAddress localAddress;
-    @Nullable private String proxyAlias;
+    @Nullable
+    private InetSocketAddress localAddress;
+    @Nullable
+    private String proxyAlias;
     private int clientToProxyAcceptorThreads = ServerGroup.DEFAULT_INCOMING_ACCEPTOR_THREADS;
     private int clientToProxyWorkerThreads = ServerGroup.DEFAULT_INCOMING_WORKER_THREADS;
     private int proxyToServerWorkerThreads = ServerGroup.DEFAULT_OUTGOING_WORKER_THREADS;
@@ -636,7 +677,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
     private boolean acceptProxyProtocol;
     private boolean sendProxyProtocol;
 
-    private DefaultHttpProxyServerBootstrap() {}
+    private DefaultHttpProxyServerBootstrap() {
+    }
 
     private DefaultHttpProxyServerBootstrap(
         ServerGroup serverGroup,
@@ -691,11 +733,9 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
     private DefaultHttpProxyServerBootstrap(Properties props) {
       withUseDnsSec(ProxyUtils.extractBooleanDefaultFalse(props, "dnssec"));
       transparent = ProxyUtils.extractBooleanDefaultFalse(props, TRANSPARENT);
-      idleConnectionTimeout =
-          Duration.ofSeconds(ProxyUtils.extractInt(props, "idle_connection_timeout"));
+      idleConnectionTimeout = Duration.ofSeconds(ProxyUtils.extractInt(props, "idle_connection_timeout"));
       connectTimeout = ProxyUtils.extractInt(props, "connect_timeout", 0);
-      maxInitialLineLength =
-          ProxyUtils.extractInt(props, "max_initial_line_length", MAX_INITIAL_LINE_LENGTH_DEFAULT);
+      maxInitialLineLength = ProxyUtils.extractInt(props, "max_initial_line_length", MAX_INITIAL_LINE_LENGTH_DEFAULT);
       maxHeaderSize = ProxyUtils.extractInt(props, "max_header_size", MAX_HEADER_SIZE_DEFAULT);
       maxChunkSize = ProxyUtils.extractInt(props, "max_chunk_size", MAX_CHUNK_SIZE_DEFAULT);
       if (props.containsKey(NAME)) {
@@ -705,7 +745,7 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
         requestedAddress = ProxyUtils.resolveSocketAddress(props.getProperty(ADDRESS));
       }
       if (props.containsKey(PORT)) {
-        port = ProxyUtils.extractInt(props, PORT, Launcher.DEFAULT_PORT);
+        port = ProxyUtils.extractInt(props, PORT, DEFAULT_PORT);
       }
       if (props.containsKey(NIC)) {
         localAddress = new InetSocketAddress(props.getProperty(NIC, DEFAULT_NIC_VALUE), 0);
@@ -717,10 +757,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
         allowLocalOnly = ProxyUtils.extractBooleanDefaultFalse(props, ALLOW_LOCAL_ONLY);
       }
       if (props.containsKey(AUTHENTICATE_SSL_CLIENTS)) {
-        authenticateSslClients =
-            ProxyUtils.extractBooleanDefaultFalse(props, AUTHENTICATE_SSL_CLIENTS);
-        boolean trustAllServers =
-            ProxyUtils.extractBooleanDefaultFalse(props, SSL_CLIENTS_TRUST_ALL_SERVERS);
+        authenticateSslClients = ProxyUtils.extractBooleanDefaultFalse(props, AUTHENTICATE_SSL_CLIENTS);
+        boolean trustAllServers = ProxyUtils.extractBooleanDefaultFalse(props, SSL_CLIENTS_TRUST_ALL_SERVERS);
         boolean sendCerts = ProxyUtils.extractBooleanDefaultFalse(props, SSL_CLIENTS_SEND_CERTS);
 
         if (authenticateSslClients && props.containsKey(SSL_CLIENTS_KEYSTORE_PATH)) {
@@ -728,16 +766,13 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
           if (props.containsKey(SSL_CLIENTS_KEYSTORE_PASSWORD)) {
             String keyStoreAlias = props.getProperty(SSL_CLIENTS_KEYSTORE_ALIAS, "");
             String keyStorePassword = props.getProperty(SSL_CLIENTS_KEYSTORE_PASSWORD, "");
-            sslEngineSource =
-                new SelfSignedSslEngineSource(
-                    keyStorePath, trustAllServers, sendCerts, keyStoreAlias, keyStorePassword);
+            sslEngineSource = new SelfSignedSslEngineSource(
+                keyStorePath, trustAllServers, sendCerts, keyStoreAlias, keyStorePassword);
           } else {
-            sslEngineSource =
-                new SelfSignedSslEngineSource(keyStorePath, trustAllServers, sendCerts);
+            sslEngineSource = new SelfSignedSslEngineSource(keyStorePath, trustAllServers, sendCerts);
           }
         } else {
-          sslEngineSource =
-              new SelfSignedSslEngineSource(DEFAULT_JKS_KEYSTORE_PATH, trustAllServers, sendCerts);
+          sslEngineSource = new SelfSignedSslEngineSource(DEFAULT_JKS_KEYSTORE_PATH, trustAllServers, sendCerts);
         }
       }
       if (props.containsKey(TRANSPARENT)) {
@@ -745,17 +780,14 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
       }
 
       if (props.containsKey(THROTTLE_READ_BYTES_PER_SECOND)) {
-        readThrottleBytesPerSecond =
-            ProxyUtils.extractLong(props, THROTTLE_READ_BYTES_PER_SECOND, 0L);
+        readThrottleBytesPerSecond = ProxyUtils.extractLong(props, THROTTLE_READ_BYTES_PER_SECOND, 0L);
       }
       if (props.containsKey(THROTTLE_WRITE_BYTES_PER_SECOND)) {
-        writeThrottleBytesPerSecond =
-            ProxyUtils.extractLong(props, THROTTLE_WRITE_BYTES_PER_SECOND, 0L);
+        writeThrottleBytesPerSecond = ProxyUtils.extractLong(props, THROTTLE_WRITE_BYTES_PER_SECOND, 0L);
       }
 
       if (props.containsKey(ALLOW_REQUESTS_TO_ORIGIN_SERVER)) {
-        allowRequestToOriginServer =
-            ProxyUtils.extractBooleanDefaultFalse(props, ALLOW_REQUESTS_TO_ORIGIN_SERVER);
+        allowRequestToOriginServer = ProxyUtils.extractBooleanDefaultFalse(props, ALLOW_REQUESTS_TO_ORIGIN_SERVER);
       }
       if (props.containsKey(ALLOW_PROXY_PROTOCOL)) {
         acceptProxyProtocol = ProxyUtils.extractBooleanDefaultFalse(props, ALLOW_PROXY_PROTOCOL);
@@ -764,12 +796,10 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
         sendProxyProtocol = ProxyUtils.extractBooleanDefaultFalse(props, SEND_PROXY_PROTOCOL);
       }
       if (props.containsKey(CLIENT_TO_PROXY_WORKER_THREADS)) {
-        clientToProxyWorkerThreads =
-            ProxyUtils.extractInt(props, CLIENT_TO_PROXY_WORKER_THREADS, 0);
+        clientToProxyWorkerThreads = ProxyUtils.extractInt(props, CLIENT_TO_PROXY_WORKER_THREADS, 0);
       }
       if (props.containsKey(PROXY_TO_SERVER_WORKER_THREADS)) {
-        proxyToServerWorkerThreads =
-            ProxyUtils.extractInt(props, PROXY_TO_SERVER_WORKER_THREADS, 0);
+        proxyToServerWorkerThreads = ProxyUtils.extractInt(props, PROXY_TO_SERVER_WORKER_THREADS, 0);
       }
       if (props.containsKey(ACCEPTOR_THREADS)) {
         clientToProxyAcceptorThreads = ProxyUtils.extractInt(props, ACCEPTOR_THREADS, 0);
@@ -777,8 +807,8 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
       if (props.containsKey(ACTIVITY_LOG_FORMAT)) {
         String format = props.getProperty(ACTIVITY_LOG_FORMAT);
         try {
-          org.littleshoot.proxy.extras.LogFormat logFormat =
-              org.littleshoot.proxy.extras.LogFormat.valueOf(format.toUpperCase());
+          org.littleshoot.proxy.extras.LogFormat logFormat = org.littleshoot.proxy.extras.LogFormat
+              .valueOf(format.toUpperCase());
           plusActivityTracker(new ActivityLogger(logFormat));
         } catch (IllegalArgumentException e) {
           LOG.warn("Unknown activity log format requested in properties: {}", format);
@@ -984,15 +1014,13 @@ public class DefaultHttpProxyServer implements HttpProxyServer {
     }
 
     private DefaultHttpProxyServer build() {
-      final ServerGroup serverGroup =
-          requireNonNullElseGet(
-              this.serverGroup,
-              () ->
-                  new ServerGroup(
-                      name,
-                      clientToProxyAcceptorThreads,
-                      clientToProxyWorkerThreads,
-                      proxyToServerWorkerThreads));
+      final ServerGroup serverGroup = requireNonNullElseGet(
+          this.serverGroup,
+          () -> new ServerGroup(
+              name,
+              clientToProxyAcceptorThreads,
+              clientToProxyWorkerThreads,
+              proxyToServerWorkerThreads));
 
       return new DefaultHttpProxyServer(
           serverGroup,
