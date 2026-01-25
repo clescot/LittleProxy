@@ -21,6 +21,13 @@
             <artifactId>littleproxy-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.littleproxy</groupId>
+            <artifactId>littleproxy-core</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
 
         <!-- CLI specific dependencies -->
         <dependency>
