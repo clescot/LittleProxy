@@ -85,6 +85,15 @@ public class FlowContext {
     return Map.copyOf(timingData);
   }
 
+  /**
+   * Gets the flow ID for this context.
+   *
+   * @return the flow ID (the client connection's ID as a string)
+   */
+  public String getFlowId() {
+    return String.valueOf(connectionId);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
