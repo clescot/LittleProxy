@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.littleshoot.proxy.ActivityTrackerAdapter;
 import org.littleshoot.proxy.FlowContext;
 import org.littleshoot.proxy.FullFlowContext;
+import org.littleshoot.proxy.extras.logging.LogFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
