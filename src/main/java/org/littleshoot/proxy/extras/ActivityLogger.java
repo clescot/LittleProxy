@@ -12,10 +12,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.littleshoot.proxy.ActivityTrackerAdapter;
 import org.littleshoot.proxy.FlowContext;
 import org.littleshoot.proxy.FullFlowContext;
+import org.littleshoot.proxy.extras.logging.LogFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** An {@link org.littleshoot.proxy.ActivityTracker} that logs HTTP activity. */
+/**
+ * An {@link org.littleshoot.proxy.ActivityTracker} that logs HTTP activity.
+ *
+ * @deprecated Use {@link org.littleshoot.proxy.extras.logging.ActivityLogger} instead, which
+ *     supports configurable log fields and timing data. This legacy implementation only formats the
+ *     fixed built-in fields.
+ */
+@Deprecated
 public class ActivityLogger extends ActivityTrackerAdapter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ActivityLogger.class);

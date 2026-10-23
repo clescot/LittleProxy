@@ -516,7 +516,7 @@ To use it, wrap your functionality or simply add it to your server bootstrap:
 ```java
 import org.littleshoot.proxy.extras.ActivityLogger;
 import org.littleshoot.proxy.extras.LoggingActivityTracker;
-import org.littleshoot.proxy.extras.LogFormat;
+import org.littleshoot.proxy.extras.logging.LogFormat;
 
 // ...
 
